@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edr-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./models:/app/models
+    environment:
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=INFO
+    networks:
+      - edr-network
+    depends_on:
+      - redis
+
+  frontend:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: edr-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    networks:
+      - edr-network
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: edr-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - edr-network
+
+  # Uncomment to enable ML model serving
+  # ml-service:
+  #   image: tensorflow/serving:latest-gpu
+  #   container_name: edr-ml
+  #   restart: always
+  #   ports:
+  #     - "8501:8501"
+  #   volumes:
+  #     - ./models:/models
+  #   command: --model_config_file=/models/models.config
+  #   networks:
+  #     - edr-network
+
+networks:
+  edr-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  models_data:
