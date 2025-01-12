@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: edr-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: DATABASE_URL
+        value: sqlite:///./data/edr.db
+      - key: PYTHONUNBUFFERED
+        value: true
+    routes:
+      - path: /api
+        destination: /api
+      - path: /ws
+        destination: /ws
+      - path: /health
+        destination: /health
+
+  - type: web
+    name: edr-dashboard
+    runtime: node
+    plan: free
+    buildCommand: cd dashboard && npm install && npm run build
+    startCommand: cd dashboard && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: edr-backend
+          property: url
+        appendPath: /api/v1
+      - key: NEXT_PUBLIC_WS_URL
+        fromService:
+          name: edr-backend
+          property: url
+        appendPath: /ws
+      - key: NODE_ENV
+        value: production
+    routes:
+      - path: /
+        destination: /
