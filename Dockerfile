@@ -27,9 +27,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy Python dependencies from builder
 COPY --from=builder /root/.local /root/.local
 
-# Ensure scripts in .local are usable
+# Ensure scripts in .local are usable and Python can find the modules
 ENV PATH=/root/.local/bin:$PATH \
-    PYTHONPATH=/app
+    PYTHONPATH=/app \
+    PYTHONUSERBASE=/root/.local
+
+# Make sure scripts are executable
+RUN chmod -R +x /root/.local/bin/*
 
 # Copy application code
 COPY . .
@@ -41,4 +45,4 @@ RUN mkdir -p /app/data /app/logs /app/models
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
