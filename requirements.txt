@@ -15,7 +15,6 @@ transformers==4.33.3
 torch==2.1.0
 
 # Security
-python-osquery==1.4.2
 psutil==5.9.5
 yara-python==4.3.1
 
