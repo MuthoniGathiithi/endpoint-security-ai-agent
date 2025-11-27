@@ -22,6 +22,7 @@ yara-python==4.3.1
 sqlalchemy==2.0.21
 alembic==1.12.1
 duckdb==0.9.1
+duckdb-engine==0.11.0
 
 # Web
 websockets==11.0.3
