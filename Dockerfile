@@ -18,16 +18,18 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install runtime system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy Python dependencies from builder
 COPY --from=builder /root/.local /root/.local
 
 # Ensure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONPATH=/app
 
 # Copy application code
 COPY . .
